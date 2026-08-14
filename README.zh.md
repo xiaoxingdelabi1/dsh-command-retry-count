@@ -1,8 +1,12 @@
-# dsh-command-retry-count
+# 重试次数调节器
+
+在聊天框里直接调整 LLM 提供方的重试次数。
 
 [English](README.md) | 中文
 
-一个斜杠命令，让你随时调整 LLM 提供方的重试次数。不用重启、不用翻配置文件，输入 `/retry-count` 就行了。
+一个斜杠命令，让你随时调整提供方的重试次数。不用重启、不用翻配置文件，输入 `/retry-count` 就行了。
+
+![示例：重试计数显示 1/20](retry-count-example.png)
 
 ## 为什么需要它
 
