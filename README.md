@@ -1,55 +1,80 @@
-# @deepseek-ai/dsh-command-retry-count
+# 🎮 dsh-command-retry-count
 
 English | [中文](README.zh.md)
 
-Slash command to adjust LLM-provider retry count (maxRetries). Registers `/retry-count` through [`ctx.commands`](../../interaction/commands/README.md), so every composed command adapter discovers and executes it without a model turn.
+> **"Hey, stop retrying so much!"** — said no one ever. But now you can decide exactly how many times your LLM provider should pick itself up and try again. 🚀
 
-The command reads the current provider settings from the `llm-pi-ai` settings namespace, validates the input, and persists the updated retry policy through the settings seam. The pi-ai adapter detects the change and re-registers the provider route with the new policy via its `registration.replace()` mechanism, so the update takes effect immediately.
+## 🧐 What's this?
 
-## Command contract
+A nifty slash command that lets you **tweak the retry count** of your LLM provider on the fly — no restarts, no config file hunting, no drama.
 
-| Input | Result |
-|---|---|
-| `/retry-count sense 5` | Updates `sense` provider's maxRetries to 5 (0-20 range). |
-| `/retry-count sense 0` | Disables retries for the `sense` provider. |
-| `/retry-count sense 20` | Sets maxRetries to the maximum of 20. |
-| `/retry-count <unknown> 5` | `Provider "<unknown>" is not registered. Available: sense, ...` |
-| `/retry-count sense 25` | `maxRetries must be an integer from 0 to 20` |
-| `/retry-count` (no args) | `Usage: /retry-count <provider> <maxRetries>` |
+Just type `/retry-count` in your DSH Web GUI, and watch the magic happen.
 
-The command validates the provider exists in the current LLM route registry and bounds the retry count to [0, 20]. A value of 0 disables retries entirely. Settings are persisted to `settings.yaml` under the `llm-pi-ai.providers.<name>.retryPolicy` path and take effect immediately through the pi-ai adapter's hot-reload mechanism.
+## 🎯 Why do I need it?
 
-## Composition
+- 😤 **Tired of seeing "已重试模型请求（2/2）"** after every blip? Crank it up!
+- 💸 **Watching your token bill climb** because retries keep piling up? Dial it down!
+- 🧪 **Testing your provider's resilience**? Set it to 20 and let it rip!
+- 🛑 **Want to fail fast** when something's broken? Set it to 0 and embrace the chaos!
 
-The producer injects `commands`, `settings`, and `llm`. Mount the command registry and this plugin:
+## 🕹️ How to use
 
-```yaml
-- id: commands
-  name: '@deepseek-ai/dsh-commands'
-- id: retry-count
-  name: '@deepseek-ai/dsh-command-retry-count'
+```bash
+/retry-count sense 5      # "Sense, you get 5 tries. No more, no less."
+/retry-count sense 0      # "Zero retries. Sink or swim, baby!"
+/retry-count sense 20     # "MAXIMUM OVERDRIVE! Go go go!"
 ```
 
-The `llm-pi-ai` adapter and `settings-file` provider must also be composed in the deployment (they are present in the shipped `dsh` base layer).
+### What happens?
 
-## Model Experience
+| You type | You get |
+|---|---|
+| `/retry-count sense 5` | ✅ `sense` retry count → 5 |
+| `/retry-count sense 0` | ✅ Retries disabled (fail fast!) |
+| `/retry-count sense 20` | ✅ Max retries (20) |
+| `/retry-count whoami 5` | ❌ `"Provider 'whoami' is not registered. Available: sense"` |
+| `/retry-count sense 99` | ❌ `"maxRetries must be an integer from 0 to 20"` |
+| `/retry-count` | ❌ `"Usage: /retry-count <provider> <maxRetries>"` |
 
-### Human `/retry-count` control
+## ⚡ How does it work?
 
-#### What the model sees
+1. You type `/retry-count sense 5`
+2. The plugin checks that `sense` is a real provider (no typos allowed!)
+3. It validates your number (0-20, we're not animals)
+4. It writes the new setting to `settings.yaml` 📝
+5. The pi-ai adapter **instantly detects the change** 🔥
+6. It re-registers the provider route with the new retry policy
+7. **Boom. Done.** No restart. No reload. No "please wait". 🎉
 
-The slash input and direct result never enter a model request. The command writes to the durable settings document, which the pi-ai adapter picks up through its `installSettingsSection` watcher and re-registers the provider route.
+## 🏗️ Installation
 
-#### Token effect
+```yaml
+# In your cordis.patch.yml
+- insert:
+    - id: retry-count
+      name: '@deepseek-ai/dsh-command-retry-count'
+```
 
-The command lifecycle adds no model tokens. A change to maxRetries affects the number of retry attempts the `dsh-llm-retry` plugin makes on subsequent model-request failures.
+That's it. The base layer already has everything else it needs.
 
-#### KV Cache effect
+## 🤔 What the model thinks
 
-The command does not change any model request prefix or history. Only the retry policy on the provider route is updated; subsequent retries use the new count.
+| Question | Answer |
+|---|---|
+| **Does the model see this command?** | Nope. It's between you and the settings file. 🤫 |
+| **Does it cost tokens?** | Zero. Zilch. Nada. |
+| **Does it mess with the conversation cache?** | Not at all. The model's context stays untouched. |
 
-## Known Limitations and Deferred Work
+## 🚧 Known quirks
 
-- **pi-ai adapter only** — the command writes to the `llm-pi-ai` settings namespace. For the `llm-deepseek` adapter, a separate command or namespace patch is needed.
-- **Normal mode only** — the command always sets a `normal` mode retry policy. Always-mode or custom retryableCodes are not exposed through the command interface.
-- **Command adapters only** — surfaces without `ctx.commands` cannot invoke it and rely on the default retry policy from the settings document.
+- **pi-ai only** — works with `dsh-llm-pi-ai` providers. If you're using the native DeepSeek adapter, this isn't the droid you're looking for.
+- **Normal mode only** — always sets a standard retry policy. Want `always` mode or custom error codes? That's a feature for another day.
+- **Needs a command adapter** — surfaces without `ctx.commands` can't use it. But hey, the Web GUI has one!
+
+## 📜 License
+
+MIT — do whatever you want, just don't blame us if your provider goes rogue. 😉
+
+---
+
+**Made with ❤️ for the DeepSeek Harness community**
