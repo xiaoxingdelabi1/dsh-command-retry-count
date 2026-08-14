@@ -1,52 +1,42 @@
-# 🎮 dsh-command-retry-count
+# dsh-command-retry-count
 
 English | [中文](README.zh.md)
 
-> **"Hey, stop retrying so much!"** — said no one ever. But now you can decide exactly how many times your LLM provider should pick itself up and try again. 🚀
+A slash command that lets you adjust how many times your LLM provider retries a failed request. No restart needed, no config file digging — just type `/retry-count` and you're done.
 
-## 🧐 What's this?
+## Why you might want this
 
-A nifty slash command that lets you **tweak the retry count** of your LLM provider on the fly — no restarts, no config file hunting, no drama.
+- You keep seeing "retry model request (2/2)" and want more attempts before giving up.
+- You're watching your token usage and want to reduce unnecessary retries.
+- You're testing provider behavior and want to crank retries up to the max.
+- You want to fail fast when something is broken — set it to 0 and move on.
 
-Just type `/retry-count` in your DSH Web GUI, and watch the magic happen.
+## Usage
 
-## 🎯 Why do I need it?
-
-- 😤 **Tired of seeing "重试模型请求（2/2）"** after every blip? Crank it up!
-- 💸 **Watching your token bill climb** because retries keep piling up? Dial it down!
-- 🧪 **Testing your provider's resilience**? Set it to 20 and let it rip!
-- 🛑 **Want to fail fast** when something's broken? Set it to 0 and embrace the chaos!
-
-## 🕹️ How to use
-
-```bash
-/retry-count my-provider 5      # "You get 5 tries. No more, no less."
-/retry-count my-provider 0      # "Zero retries. Sink or swim, baby!"
-/retry-count my-provider 20     # "MAXIMUM OVERDRIVE! Go go go!"
+```
+/retry-count my-provider 5      # set to 5 retries
+/retry-count my-provider 0      # disable retries entirely
+/retry-count my-provider 20     # max it out
 ```
 
-### What happens?
-
-| You type | You get |
+| Input | Result |
 |---|---|
-| `/retry-count my-provider 5` | ✅ Retry count → 5 |
-| `/retry-count my-provider 0` | ✅ Retries disabled (fail fast!) |
+| `/retry-count my-provider 5` | ✅ Retry count updated to 5 |
+| `/retry-count my-provider 0` | ✅ Retries disabled |
 | `/retry-count my-provider 20` | ✅ Max retries (20) |
-| `/retry-count whoami 5` | ❌ `"Provider 'whoami' is not registered. Available: my-provider, ..."` |
-| `/retry-count my-provider 99` | ❌ `"maxRetries must be an integer from 0 to 20"` |
-| `/retry-count` | ❌ `"Usage: /retry-count <provider> <maxRetries>"` |
+| `/retry-count whoami 5` | ❌ "Provider 'whoami' is not registered" |
+| `/retry-count my-provider 99` | ❌ "maxRetries must be an integer from 0 to 20" |
+| `/retry-count` (no args) | ❌ Shows usage help |
 
-## ⚡ How does it work?
+## How it works
 
-1. You type `/retry-count my-provider 5`
-2. The plugin checks that `my-provider` is a real provider (no typos allowed!)
-3. It validates your number (0-20, we're not animals)
-4. It writes the new setting to `settings.yaml` 📝
-5. The pi-ai adapter **instantly detects the change** 🔥
-6. It re-registers the provider route with the new retry policy
-7. **Boom. Done.** No restart. No reload. No "please wait". 🎉
+1. You type `/retry-count my-provider 5`.
+2. The plugin checks that the provider exists and the number is valid (0-20).
+3. It writes the new setting to `settings.yaml`.
+4. The pi-ai adapter picks up the change instantly and re-registers the provider route with the new retry policy.
+5. Done. No restart, no reload.
 
-## 🏗️ Installation
+## Installation
 
 ```yaml
 # In your cordis.patch.yml
@@ -55,26 +45,20 @@ Just type `/retry-count` in your DSH Web GUI, and watch the magic happen.
       name: '@deepseek-ai/dsh-command-retry-count'
 ```
 
-That's it. The base layer already has everything else it needs.
+The base layer already has everything else this plugin needs.
 
-## 🤔 What the model thinks
+## A note for the model
 
-| Question | Answer |
-|---|---|
-| **Does the model see this command?** | Nope. It's between you and the settings file. 🤫 |
-| **Does it cost tokens?** | Zero. Zilch. Nada. |
-| **Does it mess with the conversation cache?** | Not at all. The model's context stays untouched. |
+- The model never sees this command. It's between you and the settings file.
+- It costs zero tokens.
+- It doesn't affect the conversation cache or history.
 
-## 🚧 Known quirks
+## Known limitations
 
-- **pi-ai only** — works with `dsh-llm-pi-ai` providers. If you're using the native DeepSeek adapter, this isn't the droid you're looking for.
-- **Normal mode only** — always sets a standard retry policy. Want `always` mode or custom error codes? That's a feature for another day.
-- **Needs a command adapter** — surfaces without `ctx.commands` can't use it. But hey, the Web GUI has one!
+- **pi-ai only** — this command works with providers configured through `dsh-llm-pi-ai`. If you're using the native DeepSeek adapter (`dsh-llm-deepseek`), the plugin won't work for you yet.
+- **Normal mode only** — it always sets a standard retry policy. If you need `always` mode or custom error codes, that's not currently supported.
+- **Needs a command adapter** — surfaces without `ctx.commands` can't use it. The Web GUI has one built in.
 
-## 📜 License
+## License
 
-MIT — do whatever you want, just don't blame us if your provider goes rogue. 😉
-
----
-
-**Made with ❤️ for the DeepSeek Harness community**
+MIT
