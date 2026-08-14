@@ -1,55 +1,80 @@
-# @deepseek-ai/dsh-command-retry-count
+# 🎮 dsh-command-retry-count
 
 [English](README.md) | 中文
 
-调整 LLM 提供方重试次数（maxRetries）的斜杠命令。通过 [`ctx.commands`](../../interaction/commands/README.md) 注册 `/retry-count`，因此每个组合的命令适配器都能发现并执行它，无需模型参与。
+> **"别重试了，再试就没了！"** —— 但有了这个插件，**你说了算**。🚀
 
-该命令从 `llm-pi-ai` 设置命名空间读取当前提供方配置，验证输入，然后通过设置 seam 持久化更新后的重试策略。pi-ai 适配器检测到变化后，通过其 `registration.replace()` 机制重新注册提供方路由，因此更新会立即生效。
+## 🧐 这是啥？
 
-## 命令约定
+一个超好用的斜杠命令，让你在 **Web 界面里随手调整 LLM 提供方的重试次数**——不用重启、不用翻配置文件、不费吹灰之力。
 
-| 输入 | 结果 |
-|---|---|
-| `/retry-count sense 5` | 将 `sense` 提供方的 maxRetries 更新为 5（范围为 0-20）。 |
-| `/retry-count sense 0` | 禁用 `sense` 提供方的重试。 |
-| `/retry-count sense 20` | 将 maxRetries 设置为最大值 20。 |
-| `/retry-count <unknown> 5` | `Provider "<unknown>" is not registered. Available: sense, ...` |
-| `/retry-count sense 25` | `maxRetries must be an integer from 0 to 20` |
-| `/retry-count`（无参数） | `Usage: /retry-count <provider> <maxRetries>` |
+只需在输入框里敲 `/retry-count`，事情就成了。
 
-该命令验证提供方存在于当前 LLM 路由注册表中，并将重试次数限制在 [0, 20] 范围内。值为 0 将完全禁用重试。设置会持久化到 `settings.yaml` 文件中的 `llm-pi-ai.providers.<name>.retryPolicy` 路径下，并通过 pi-ai 适配器的热重载机制立即生效。
+## 🎯 为什么需要它？
 
-## 组合
+- 😤 **看够了「已重试模型请求（2/2）」**？那就给它拉满！
+- 💸 **眼瞅着 token 账单蹭蹭涨**？那就给它降下来！
+- 🧪 **想测试一下提供方的稳定性**？设成 20，让它反复横跳！
+- 🛑 **发现问题想快速失败**？设成 0，拥抱混乱！
 
-生产者注入 `commands`、`settings` 和 `llm` 服务。挂载命令注册表和此插件：
+## 🕹️ 怎么用
 
-```yaml
-- id: commands
-  name: '@deepseek-ai/dsh-commands'
-- id: retry-count
-  name: '@deepseek-ai/dsh-command-retry-count'
+```bash
+/retry-count sense 5      # "sense，给你 5 次机会，好好把握。"
+/retry-count sense 0      # "零次重试，一次定生死！"
+/retry-count sense 20     # "最大火力！给我冲！"
 ```
 
-部署中还需要组合 `llm-pi-ai` 适配器和 `settings-file` 提供方（它们已存在于官方 `dsh` 基础层中）。
+### 结果一览
 
-## 模型体验
+| 你输入 | 你得到 |
+|---|---|
+| `/retry-count sense 5` | ✅ `sense` 重试次数 → 5 |
+| `/retry-count sense 0` | ✅ 禁用重试（快速失败） |
+| `/retry-count sense 20` | ✅ 最大重试次数（20 次） |
+| `/retry-count whoami 5` | ❌ `"Provider 'whoami' is not registered. Available: sense"` |
+| `/retry-count sense 99` | ❌ `"maxRetries must be an integer from 0 to 20"` |
+| `/retry-count`（无参数） | ❌ `"Usage: /retry-count <provider> <maxRetries>"` |
 
-### 人类 `/retry-count` 控制
+## ⚡ 原理是？
 
-#### 模型看到的内容
+1. 你输入 `/retry-count sense 5`
+2. 插件检查 `sense` 是不是真的存在（不能乱写！）
+3. 验证数字在 0-20 之间（我们是有底线的）
+4. 把新设置写入 `settings.yaml` 📝
+5. pi-ai 适配器**瞬间检测到变化** 🔥
+6. 用新的重试策略重新注册提供方路由
+7. **搞定。** 不用重启、不用刷新、不用"请稍候"。🎉
 
-斜杠输入和直接结果永远不会进入模型请求。该命令写入持久的设置文档，pi-ai 适配器通过其 `installSettingsSection` 监视器拾取更改，并重新注册提供方路由。
+## 🏗️ 安装方法
 
-#### Token 影响
+```yaml
+# 在 cordis.patch.yml 里加一行
+- insert:
+    - id: retry-count
+      name: '@deepseek-ai/dsh-command-retry-count'
+```
 
-命令生命周期不会增加模型 token。更改 maxRetries 会影响 `dsh-llm-retry` 插件在后续模型请求失败时进行的重试尝试次数。
+就这。基础层已经自带所有依赖了。
 
-#### KV Cache 影响
+## 🤔 模型怎么看？
 
-该命令不会更改任何模型请求前缀或历史记录。仅更新提供方路由上的重试策略；后续重试将使用新的次数。
+| 问题 | 回答 |
+|---|---|
+| **模型能看到这个命令吗？** | 看不到。这是你和配置文件之间的秘密。🤫 |
+| **会消耗 token 吗？** | 零。一个子儿都不花。 |
+| **会影响对话缓存吗？** | 完全不影响。模型的上下文纹丝不动。 |
 
-## 已知限制与暂缓事项
+## 🚧 已知的小毛病
 
-- **仅 pi-ai 适配器** — 该命令写入 `llm-pi-ai` 设置命名空间。对于 `llm-deepseek` 适配器，需要单独的命令或命名空间补丁。
-- **仅 normal 模式** — 该命令始终设置 `normal` 模式的重试策略。always 模式或自定义 retryableCodes 未通过命令接口暴露。
-- **仅命令适配器** — 没有 `ctx.commands` 的表面无法调用它，需依赖设置文档中的默认重试策略。
+- **仅支持 pi-ai**——适用于 `dsh-llm-pi-ai` 提供方。如果你用的是原生 DeepSeek 适配器，这个插件暂时帮不了你。
+- **仅 normal 模式**——始终设置标准重试策略。想要 `always` 模式或自定义错误码？那是以后的事。
+- **需要命令适配器**——没有 `ctx.commands` 的表面用不了。不过放心，Web GUI 自带一个！
+
+## 📜 许可证
+
+MIT —— 想怎么用就怎么用，但你的提供方要是抽风了可别怪我们。😉
+
+---
+
+**❤️ 为 DeepSeek Harness 社区打造**
