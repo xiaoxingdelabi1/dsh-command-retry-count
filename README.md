@@ -12,7 +12,7 @@ Just type `/retry-count` in your DSH Web GUI, and watch the magic happen.
 
 ## 🎯 Why do I need it?
 
-- 😤 **Tired of seeing "已重试模型请求（2/2）"** after every blip? Crank it up!
+- 😤 **Tired of seeing "重试模型请求（2/2）"** after every blip? Crank it up!
 - 💸 **Watching your token bill climb** because retries keep piling up? Dial it down!
 - 🧪 **Testing your provider's resilience**? Set it to 20 and let it rip!
 - 🛑 **Want to fail fast** when something's broken? Set it to 0 and embrace the chaos!
@@ -20,26 +20,26 @@ Just type `/retry-count` in your DSH Web GUI, and watch the magic happen.
 ## 🕹️ How to use
 
 ```bash
-/retry-count sense 5      # "Sense, you get 5 tries. No more, no less."
-/retry-count sense 0      # "Zero retries. Sink or swim, baby!"
-/retry-count sense 20     # "MAXIMUM OVERDRIVE! Go go go!"
+/retry-count my-provider 5      # "You get 5 tries. No more, no less."
+/retry-count my-provider 0      # "Zero retries. Sink or swim, baby!"
+/retry-count my-provider 20     # "MAXIMUM OVERDRIVE! Go go go!"
 ```
 
 ### What happens?
 
 | You type | You get |
 |---|---|
-| `/retry-count sense 5` | ✅ `sense` retry count → 5 |
-| `/retry-count sense 0` | ✅ Retries disabled (fail fast!) |
-| `/retry-count sense 20` | ✅ Max retries (20) |
-| `/retry-count whoami 5` | ❌ `"Provider 'whoami' is not registered. Available: sense"` |
-| `/retry-count sense 99` | ❌ `"maxRetries must be an integer from 0 to 20"` |
+| `/retry-count my-provider 5` | ✅ Retry count → 5 |
+| `/retry-count my-provider 0` | ✅ Retries disabled (fail fast!) |
+| `/retry-count my-provider 20` | ✅ Max retries (20) |
+| `/retry-count whoami 5` | ❌ `"Provider 'whoami' is not registered. Available: my-provider, ..."` |
+| `/retry-count my-provider 99` | ❌ `"maxRetries must be an integer from 0 to 20"` |
 | `/retry-count` | ❌ `"Usage: /retry-count <provider> <maxRetries>"` |
 
 ## ⚡ How does it work?
 
-1. You type `/retry-count sense 5`
-2. The plugin checks that `sense` is a real provider (no typos allowed!)
+1. You type `/retry-count my-provider 5`
+2. The plugin checks that `my-provider` is a real provider (no typos allowed!)
 3. It validates your number (0-20, we're not animals)
 4. It writes the new setting to `settings.yaml` 📝
 5. The pi-ai adapter **instantly detects the change** 🔥
