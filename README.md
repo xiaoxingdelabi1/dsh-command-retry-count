@@ -1,8 +1,12 @@
-# dsh-command-retry-count
+# Retry Count Controller
+
+Adjust your LLM provider's retry limit from the chat box.
 
 English | [中文](README.zh.md)
 
-A slash command that lets you adjust how many times your LLM provider retries a failed request. No restart needed, no config file digging — just type `/retry-count` and you're done.
+A slash command that lets you change how many times your provider retries a failed request. No restart, no config file hunting — just type `/retry-count` and you're done.
+
+![Example: retry count showing 1/20](retry-count-example.png)
 
 ## Why you might want this
 
