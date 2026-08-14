@@ -8,6 +8,8 @@ A slash command that lets you change how many times your provider retries a fail
 
 ![Example: retry count showing 1/20](retry-count-example.png)
 
+*In the screenshot above, the retry message now reads "已重试模型请求(1/20)" — retry 1 of 20, instead of the default 2. You can see the current retry count and the remaining time before the next attempt.*
+
 ## Why you might want this
 
 - You keep seeing "retry model request (2/2)" and want more attempts before giving up.
@@ -17,20 +19,56 @@ A slash command that lets you change how many times your provider retries a fail
 
 ## Usage
 
+Type the command in your DSH Web GUI chat input, just like any other slash command:
+
 ```
-/retry-count my-provider 5      # set to 5 retries
-/retry-count my-provider 0      # disable retries entirely
-/retry-count my-provider 20     # max it out
+/retry-count <provider-name> <number>
 ```
 
-| Input | Result |
+### Examples
+
+| Command | What it does |
 |---|---|
-| `/retry-count my-provider 5` | ✅ Retry count updated to 5 |
-| `/retry-count my-provider 0` | ✅ Retries disabled |
-| `/retry-count my-provider 20` | ✅ Max retries (20) |
-| `/retry-count whoami 5` | ❌ "Provider 'whoami' is not registered" |
-| `/retry-count my-provider 99` | ❌ "maxRetries must be an integer from 0 to 20" |
-| `/retry-count` (no args) | ❌ Shows usage help |
+| `/retry-count my-provider 5` | Set max retries to 5 |
+| `/retry-count my-provider 0` | Disable retries entirely |
+| `/retry-count my-provider 20` | Set max retries to 20 (maximum allowed) |
+| `/retry-count` | Show usage help (no arguments) |
+
+### After you run it
+
+The plugin will respond with one of these messages:
+
+**Success:**
+```
+Provider "my-provider" retry count updated to 5 (max 20). Changes take effect immediately.
+```
+
+**No change needed (same value already set):**
+```
+Provider "my-provider" already has maxRetries=5.
+```
+
+**Provider not found:**
+```
+Provider "whoami" is not registered. Available: my-provider, another-provider
+```
+
+**Invalid number:**
+```
+maxRetries must be an integer from 0 to 20
+```
+
+### What happens next
+
+The next time your provider fails a model request, the retry count will use your new setting. If you set it to 5, you'll see:
+
+```
+已重试模型请求(1/5) · 1s
+已重试模型请求(2/5) · 2s
+...
+```
+
+The change is saved to `settings.yaml` and persists across DSH restarts.
 
 ## How it works
 
