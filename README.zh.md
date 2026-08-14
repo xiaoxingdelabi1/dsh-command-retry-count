@@ -20,26 +20,26 @@
 ## 🕹️ 怎么用
 
 ```bash
-/retry-count sense 5      # "sense，给你 5 次机会，好好把握。"
-/retry-count sense 0      # "零次重试，一次定生死！"
-/retry-count sense 20     # "最大火力！给我冲！"
+/retry-count my-provider 5      # "给你 5 次机会，好好把握。"
+/retry-count my-provider 0      # "零次重试，一次定生死！"
+/retry-count my-provider 20     # "最大火力！给我冲！"
 ```
 
 ### 结果一览
 
 | 你输入 | 你得到 |
 |---|---|
-| `/retry-count sense 5` | ✅ `sense` 重试次数 → 5 |
-| `/retry-count sense 0` | ✅ 禁用重试（快速失败） |
-| `/retry-count sense 20` | ✅ 最大重试次数（20 次） |
-| `/retry-count whoami 5` | ❌ `"Provider 'whoami' is not registered. Available: sense"` |
-| `/retry-count sense 99` | ❌ `"maxRetries must be an integer from 0 to 20"` |
+| `/retry-count my-provider 5` | ✅ 重试次数 → 5 |
+| `/retry-count my-provider 0` | ✅ 禁用重试（快速失败） |
+| `/retry-count my-provider 20` | ✅ 最大重试次数（20 次） |
+| `/retry-count whoami 5` | ❌ `"Provider 'whoami' is not registered. Available: my-provider, ..."` |
+| `/retry-count my-provider 99` | ❌ `"maxRetries must be an integer from 0 to 20"` |
 | `/retry-count`（无参数） | ❌ `"Usage: /retry-count <provider> <maxRetries>"` |
 
 ## ⚡ 原理是？
 
-1. 你输入 `/retry-count sense 5`
-2. 插件检查 `sense` 是不是真的存在（不能乱写！）
+1. 你输入 `/retry-count my-provider 5`
+2. 插件检查 `my-provider` 是不是真的存在（不能乱写！）
 3. 验证数字在 0-20 之间（我们是有底线的）
 4. 把新设置写入 `settings.yaml` 📝
 5. pi-ai 适配器**瞬间检测到变化** 🔥
