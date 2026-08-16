@@ -78,6 +78,10 @@ The next time your provider fails a model request, the retry count will use your
 
 With `inf`, retries never give up on their own — the counter keeps climbing (1/∞, 2/∞, ...) until the request succeeds or you stop it. The change is saved to `settings.yaml` and persists across DSH restarts.
 
+![Example: unlimited retry showing 1/∞](retry-count-infinite-example.png)
+
+*With unlimited retries enabled, the retry counter shows "1/无限" — attempt 1 of infinity. The counter keeps climbing and each retry waits with exponential backoff (capped at 60s) until the request succeeds or you manually stop it.*
+
 > ⚠️ **Unlimited retries can hammer a provider that is down.** Every retry waits with exponential backoff (capped), and stopping the request cancels any in-flight retry — but a persistently failing provider will keep being retried indefinitely. Use `inf` deliberately and switch back to a finite number when you're done.
 
 ## How it works
