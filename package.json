@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-command-retry-count",
   "description": "Slash command to adjust LLM-provider retry count (maxRetries)",
-  "version": "0.1.0-rc.6",
+  "version": "0.1.0-rc.7",
   "publishConfig": {
     "access": "public"
   },
